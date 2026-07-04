@@ -3,6 +3,7 @@ import { useAuth } from './auth/AuthContext';
 import ProtectedRoute, { homeFor } from './auth/ProtectedRoute';
 import PortalLayout from './components/PortalLayout';
 import LoginPage from './pages/LoginPage';
+import AccountPage from './pages/AccountPage';
 import InstitutesPage from './pages/superadmin/InstitutesPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import StudentsPage from './pages/admin/StudentsPage';
@@ -31,13 +32,18 @@ const ADMIN_NAV = [
   { to: '/admin/students', label: 'Students' },
   { to: '/admin/library', label: 'Library' },
   { to: '/admin/performance', label: 'Performance' },
+  { to: '/admin/account', label: 'Account' },
 ];
 const STUDENT_NAV = [
   { to: '/student/tests', label: 'Tests' },
   { to: '/student/notes', label: 'Notes' },
   { to: '/student/performance', label: 'Performance' },
+  { to: '/student/account', label: 'Account' },
 ];
-const SUPERADMIN_NAV = [{ to: '/superadmin/institutes', label: 'Institutes' }];
+const SUPERADMIN_NAV = [
+  { to: '/superadmin/institutes', label: 'Institutes' },
+  { to: '/superadmin/account', label: 'Account' },
+];
 
 export default function App() {
   return (
@@ -54,6 +60,7 @@ export default function App() {
         }
       >
         <Route path="/superadmin/institutes" element={<InstitutesPage />} />
+        <Route path="/superadmin/account" element={<AccountPage />} />
       </Route>
 
       {/* Institute admin */}
@@ -74,6 +81,7 @@ export default function App() {
         <Route path="/admin/library/folders/:folderId" element={<LibraryFolderPage />} />
         <Route path="/admin/performance" element={<AdminPerformancePage />} />
         <Route path="/admin/performance/:studentId" element={<AdminStudentPerformancePage />} />
+        <Route path="/admin/account" element={<AccountPage />} />
       </Route>
 
       {/* Student */}
@@ -89,6 +97,7 @@ export default function App() {
         <Route path="/student/performance" element={<StudentPerformancePage />} />
         <Route path="/student/tests/:testId/result" element={<ResultPage />} />
         <Route path="/student/tests/:testId/leaderboard" element={<LeaderboardPage />} />
+        <Route path="/student/account" element={<AccountPage />} />
       </Route>
 
       {/* Test-taking runs full-screen (its own layout) */}

@@ -1,6 +1,7 @@
 package com.vidyapeet.auth;
 
 import com.vidyapeet.auth.dto.AuthResponse;
+import com.vidyapeet.auth.dto.ChangeCredentialsRequest;
 import com.vidyapeet.auth.dto.LoginRequest;
 import com.vidyapeet.auth.dto.RegisterStudentRequest;
 import com.vidyapeet.auth.dto.UserSummary;
@@ -76,6 +77,57 @@ public class AuthService {
         user.setRole(Role.STUDENT);
         user = userRepository.save(user);
 
+        return buildAuthResponse(user, institute);
+    }
+
+    /**
+     * Updates the authenticated user's email and/or password. Requires the
+     * current password for authorization. Returns a fresh token so the client
+     * stays in sync after an email change.
+     */
+    @Transactional
+    public AuthResponse updateCredentials(UserPrincipal principal, ChangeCredentialsRequest request) {
+        User user = userRepository.findById(principal.getUserId())
+                .orElseThrow(() -> Exceptions.unauthorized("Account no longer exists."));
+
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+            throw Exceptions.unauthorized("Current password is incorrect.");
+        }
+
+        boolean changingEmail = StringUtils.hasText(request.newEmail())
+                && !request.newEmail().trim().equalsIgnoreCase(user.getEmail());
+        boolean changingPassword = StringUtils.hasText(request.newPassword());
+
+        if (!changingEmail && !changingPassword) {
+            throw Exceptions.badRequest("Provide a new email or a new password to update.");
+        }
+
+        if (changingEmail) {
+            String newEmail = request.newEmail().trim();
+            if (!newEmail.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
+                throw Exceptions.badRequest("Enter a valid email address.");
+            }
+            boolean taken = user.getInstituteId() == null
+                    ? userRepository.existsByEmailAndInstituteIdIsNull(newEmail)
+                    : userRepository.existsByInstituteIdAndEmail(user.getInstituteId(), newEmail);
+            if (taken) {
+                throw Exceptions.conflict("That email is already in use.");
+            }
+            user.setEmail(newEmail);
+        }
+
+        if (changingPassword) {
+            if (request.newPassword().length() < 8) {
+                throw Exceptions.badRequest("New password must be at least 8 characters.");
+            }
+            user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        }
+
+        user = userRepository.save(user);
+
+        Institute institute = user.getInstituteId() == null
+                ? null
+                : instituteRepository.findById(user.getInstituteId()).orElse(null);
         return buildAuthResponse(user, institute);
     }
 

@@ -60,12 +60,21 @@ export function AuthProvider({ children }) {
     return res.data.user;
   }
 
+  // Update the signed-in user's email and/or password. Returns a fresh token,
+  // so we swap it in to keep the session valid after an email change.
+  async function updateCredentials({ currentPassword, newEmail, newPassword }) {
+    const res = await api.put('/api/auth/me', { currentPassword, newEmail, newPassword });
+    setAuthToken(res.data.token);
+    persistUser(res.data.user);
+    return res.data.user;
+  }
+
   function logout() {
     clearSession();
   }
 
   const value = useMemo(
-    () => ({ user, ready, login, registerStudent, logout }),
+    () => ({ user, ready, login, registerStudent, updateCredentials, logout }),
     [user, ready],
   );
 

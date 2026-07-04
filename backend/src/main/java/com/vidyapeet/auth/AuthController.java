@@ -1,6 +1,7 @@
 package com.vidyapeet.auth;
 
 import com.vidyapeet.auth.dto.AuthResponse;
+import com.vidyapeet.auth.dto.ChangeCredentialsRequest;
 import com.vidyapeet.auth.dto.LoginRequest;
 import com.vidyapeet.auth.dto.RegisterStudentRequest;
 import com.vidyapeet.auth.dto.UserSummary;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,5 +39,11 @@ public class AuthController {
     @GetMapping("/me")
     public UserSummary me() {
         return authService.currentUser(SecurityUtils.currentUser());
+    }
+
+    /** Update the signed-in user's email and/or password. */
+    @PutMapping("/me")
+    public AuthResponse updateCredentials(@Valid @RequestBody ChangeCredentialsRequest request) {
+        return authService.updateCredentials(SecurityUtils.currentUser(), request);
     }
 }
