@@ -48,8 +48,13 @@ public class SecurityConfig {
                                 "/api/branding/**",
                                 "/actuator/health"
                         ).permitAll()
-                        // H2 console (dev only)
-                        .requestMatchers(org.springframework.boot.autoconfigure.security.servlet.PathRequest.toH2Console()).permitAll()
+                        // H2 console (dev only). Use a plain path matcher rather than
+                        // PathRequest.toH2Console(): the latter resolves the H2ConsoleProperties
+                        // bean at request time, which is absent under the prod profile (H2 console
+                        // disabled) and throws NoSuchBeanDefinitionException -> 500 on every
+                        // non-permitted request. In prod the console servlet isn't registered, so
+                        // permitting the path is harmless.
+                        .requestMatchers(new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/h2-console/**")).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated()
                 )
