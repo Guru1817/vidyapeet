@@ -1,0 +1,7 @@
+target/
+uploads/
+*.iml
+.idea/
+.vscode/
+mvn-exit.txt
+*.log

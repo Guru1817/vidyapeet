@@ -1,0 +1,32 @@
+# ===== Secrets (never commit) =====
+.env
+.env.*
+*.pem
+*.key
+application-local.yml
+application-local.yaml
+
+# ===== Backend (Maven / Spring Boot) =====
+backend/target/
+backend/uploads/
+backend/mvn-exit.txt
+*.class
+*.log
+
+# Local H2 database files
+*.mv.db
+*.trace.db
+
+# ===== Frontend (Node / Vite) =====
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+npm-debug.log*
+yarn-error.log*
+
+# ===== IDE / OS =====
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db

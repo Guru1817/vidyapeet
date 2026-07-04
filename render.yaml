@@ -1,0 +1,47 @@
+# Render Blueprint for the Vidyapeet backend.
+# Deploy: Render Dashboard -> New -> Blueprint -> point at this repo.
+# Secrets (sync: false) are entered in the Render dashboard, never committed.
+services:
+  - type: web
+    name: vidyapeet-backend
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    healthCheckPath: /actuator/health
+    autoDeploy: true
+    envVars:
+      # Activates application-prod.yml (PostgreSQL + Flyway + SupabaseStorageService).
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: JAVA_OPTS
+        value: -XX:MaxRAMPercentage=75.0
+
+      # --- Supabase PostgreSQL (use the Session pooler connection, see DEPLOYMENT.md) ---
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_USERNAME
+        sync: false
+      - key: DATABASE_PASSWORD
+        sync: false
+
+      # --- Security ---
+      # Base64-encoded 256-bit secret.
+      - key: VIDYAPEET_JWT_SECRET
+        sync: false
+      # Comma-separated list of allowed frontend origins (your Vercel URL).
+      - key: VIDYAPEET_CORS_ORIGINS
+        sync: false
+
+      # --- Supabase Storage ---
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: SUPABASE_BUCKET
+        value: vidyapeet-files
+
+      # Keep demo seeding OFF in production.
+      - key: VIDYAPEET_SEED_ENABLED
+        value: "false"

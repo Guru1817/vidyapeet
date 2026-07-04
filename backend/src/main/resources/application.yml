@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: vidyapeet-backend
+  profiles:
+    # Local development uses H2 by default. Use the "prod" profile for PostgreSQL.
+    active: dev
+  jackson:
+    default-property-inclusion: non_null
+
+# Application-specific settings
+vidyapeet:
+  jwt:
+    # Base64-encoded 256-bit secret. OVERRIDE in production via VIDYAPEET_JWT_SECRET.
+    secret: ${VIDYAPEET_JWT_SECRET:Y2hhbmdlLW1lLXRoaXMtaXMtYS1kZXYtb25seS1zZWNyZXQta2V5LTEyMzQ1Ng==}
+    # Token validity in milliseconds (default 12 hours)
+    expiration-ms: ${VIDYAPEET_JWT_EXPIRATION_MS:43200000}
+  cors:
+    allowed-origins: ${VIDYAPEET_CORS_ORIGINS:http://localhost:5173}
+
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: always
+    include-binding-errors: always
+
+spring.servlet.multipart:
+  max-file-size: 10MB
+  max-request-size: 12MB
+
+# File storage. Local disk is the default (dev); the prod profile activates
+# SupabaseStorageService, which reads the supabase.* settings below.
+vidyapeet.storage:
+  local-dir: ${VIDYAPEET_STORAGE_DIR:./uploads}
+  supabase:
+    # NEVER hard-code these — supply via environment variables in prod.
+    url: ${SUPABASE_URL:}
+    service-key: ${SUPABASE_SERVICE_KEY:}
+    bucket: ${SUPABASE_BUCKET:vidyapeet-files}

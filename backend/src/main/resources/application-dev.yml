@@ -1,0 +1,28 @@
+spring:
+  # H2 in-memory database for local development and tests.
+  datasource:
+    url: jdbc:h2:mem:vidyapeet;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      # Schema is generated from entities in dev/test. Flyway is the source of
+      # truth for the PostgreSQL (prod) database.
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: false
+    open-in-view: false
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  flyway:
+    enabled: false
+
+# Seed demo data on startup (dev only)
+vidyapeet:
+  seed:
+    enabled: true
