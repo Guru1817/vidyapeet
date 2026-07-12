@@ -5,7 +5,7 @@
 > read study material, and take auto-graded mock tests with per-batch leaderboards — while
 > being completely isolated from every other institute's data.
 
-🔗 **Live demo:** `[LIVE URL]` · **Try it with the demo logins below.**
+🔗 **Live demo:** **[vidyapeeth.in](https://vidyapeeth.in/)** · **Try it with the demo logins below.**
 
 ---
 
