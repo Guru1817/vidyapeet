@@ -1,0 +1,107 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`BrandLogo > snapshots > matches the SVG output for the full variant 1`] = `
+<svg
+  aria-label="Vidyapeeth"
+  class=""
+  role="img"
+  viewBox="0 0 200 40"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <g
+    fill="none"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="3"
+  >
+    <path
+      d="M20 15 L4 22 L20 29 L36 22 Z"
+    />
+    <path
+      d="M36 22 L36 30"
+    />
+    <circle
+      cx="36"
+      cy="32"
+      fill="currentColor"
+      r="1.6"
+      stroke="none"
+    />
+    <path
+      d="M8 26 L8 33 C12 30 16 30 20 32 C24 30 28 30 32 33 L32 26"
+    />
+  </g>
+  <text
+    fill="currentColor"
+    font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+    font-size="24"
+    font-weight="700"
+    letter-spacing="-0.5"
+    x="48"
+    y="27"
+  >
+    Vidyapeeth
+  </text>
+</svg>
+`;
+
+exports[`BrandLogo > snapshots > matches the SVG output for the icon variant 1`] = `
+<svg
+  aria-label="Vidyapeeth"
+  class=""
+  role="img"
+  viewBox="0 0 40 40"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <g
+    fill="none"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="3"
+  >
+    <title>
+      Vidyapeeth
+    </title>
+    <path
+      d="M20 15 L4 22 L20 29 L36 22 Z"
+    />
+    <path
+      d="M36 22 L36 30"
+    />
+    <circle
+      cx="36"
+      cy="32"
+      fill="currentColor"
+      r="1.6"
+      stroke="none"
+    />
+    <path
+      d="M8 26 L8 33 C12 30 16 30 20 32 C24 30 28 30 32 33 L32 26"
+    />
+  </g>
+</svg>
+`;
+
+exports[`BrandLogo > snapshots > matches the SVG output for the wordmark variant 1`] = `
+<svg
+  aria-label="Vidyapeeth"
+  class=""
+  role="img"
+  viewBox="0 0 160 40"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <text
+    fill="currentColor"
+    font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+    font-size="24"
+    font-weight="700"
+    letter-spacing="-0.5"
+    x="0"
+    y="27"
+  >
+    Vidyapeeth
+  </text>
+</svg>
+`;

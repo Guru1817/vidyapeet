@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import api, { errorMessage } from '../../api/client';
 import { Alert, Badge, Button, Card, CardBody, Field, Input, Select } from '../../components/ui';
 import Spinner from '../../components/Spinner';
+import QuestionImage from '../../components/QuestionImage';
 
 const OPTS = ['A', 'B', 'C', 'D'];
 
@@ -26,6 +27,29 @@ const TYPE_LABEL = {
   TRUE_FALSE: 'True / False',
   FILL_BLANK: 'Fill in the blank',
 };
+
+// Group questions under their section labels. When there are no sections, a
+// single ungrouped group (section: null) is returned so questions render as a
+// plain list. Questions whose sectionId does not match any section fall into a
+// trailing ungrouped group.
+function groupBySection(questions, sections) {
+  const list = questions || [];
+  const secs = sections || [];
+  if (secs.length === 0) {
+    return [{ section: null, questions: list }];
+  }
+  const ordered = [...secs].sort((a, b) => a.position - b.position);
+  const known = new Set(ordered.map((s) => s.id));
+  const groups = ordered.map((section) => ({
+    section,
+    questions: list.filter((q) => q.sectionId === section.id),
+  }));
+  const ungrouped = list.filter((q) => q.sectionId == null || !known.has(q.sectionId));
+  if (ungrouped.length > 0) {
+    groups.push({ section: null, questions: ungrouped });
+  }
+  return groups.filter((g) => g.questions.length > 0);
+}
 
 function buildPayload(q) {
   const base = { type: q.type, text: q.text, marks: Number(q.marks) };
@@ -55,6 +79,7 @@ export default function TestEditorPage() {
   const [negativeMarking, setNegativeMarking] = useState(false);
   const [negMark, setNegMark] = useState(0.25);
   const [q, setQ] = useState(EMPTY_Q);
+  const [sectionLabel, setSectionLabel] = useState('');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
@@ -128,6 +153,48 @@ export default function TestEditorPage() {
     }
   }
 
+  async function createSection(e) {
+    e.preventDefault();
+    setError('');
+    setBusy(true);
+    try {
+      await api.post(`/api/tests/${testId}/sections`, { label: sectionLabel });
+      setSectionLabel('');
+      load();
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function deleteSection(sectionId) {
+    setBusy(true);
+    try {
+      await api.delete(`/api/tests/${testId}/sections/${sectionId}`);
+      load();
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function assignQuestionSection(bankQuestionId, sectionId) {
+    setBusy(true);
+    try {
+      await api.put(`/api/tests/${testId}/references/section`, {
+        bankQuestionId,
+        sectionId: sectionId || null,
+      });
+      load();
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function importExcel(e) {
     e.preventDefault();
     const file = importRef.current?.files?.[0];
@@ -172,11 +239,11 @@ export default function TestEditorPage() {
           {test.batchId ? '← Back to batch' : '← Back to folder'}
         </Link>
         <div className="mt-1 flex items-center gap-3">
-          <h2 className="text-xl font-semibold text-slate-800">{test.title}</h2>
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">{test.title}</h2>
           <Badge kind="blue">{test.testType === 'PRACTICE' ? 'Practice' : 'Exam'}</Badge>
           {test.published ? <Badge kind="green">Published</Badge> : <Badge kind="amber">Draft</Badge>}
         </div>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-500 dark:text-slate-400">
           {test.questions.length} questions · {test.totalMarks} marks · {test.durationMinutes} min
           {test.negativeMarking ? ` · -${test.negativeMarkPerWrong} per wrong` : ''}
         </p>
@@ -205,7 +272,7 @@ export default function TestEditorPage() {
             </Field>
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-3">
-            <label className="flex items-center gap-2 text-sm text-slate-600">
+            <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
               <input
                 type="checkbox"
                 checked={negativeMarking}
@@ -215,7 +282,7 @@ export default function TestEditorPage() {
               Negative marking
             </label>
             {negativeMarking && (
-              <label className="flex items-center gap-2 text-sm text-slate-600">
+              <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
                 Deduct per wrong:
                 <Input
                   type="number"
@@ -247,8 +314,8 @@ export default function TestEditorPage() {
       {/* Bulk import */}
       <Card>
         <CardBody>
-          <h3 className="mb-2 text-lg font-semibold text-slate-800">Bulk import (Excel)</h3>
-          <p className="mb-3 text-sm text-slate-500">
+          <h3 className="mb-2 text-lg font-semibold text-slate-800 dark:text-slate-100">Bulk import (Excel)</h3>
+          <p className="mb-3 text-sm text-slate-500 dark:text-slate-400">
             Columns: Question, Type (MCQ/MSQ/TRUE_FALSE/FILL_BLANK), Option A–D, Correct, Marks. Correct means:
             MCQ → <code>B</code>; MSQ → <code>A,C</code>; True/False → <code>TRUE</code>/<code>FALSE</code>;
             Fill → <code>newton|newtons</code>. The first row is a header.
@@ -258,7 +325,7 @@ export default function TestEditorPage() {
               ref={importRef}
               type="file"
               accept=".xlsx,.xls"
-              className="text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-brand file:px-3 file:py-2 file:text-white"
+              className="text-sm text-slate-600 dark:text-slate-300 file:mr-3 file:rounded-lg file:border-0 file:bg-brand file:px-3 file:py-2 file:text-white"
               required
             />
             <Button type="submit" disabled={busy}>
@@ -271,7 +338,7 @@ export default function TestEditorPage() {
       {/* Add question */}
       <Card>
         <CardBody>
-          <h3 className="mb-3 text-lg font-semibold text-slate-800">Add a question</h3>
+          <h3 className="mb-3 text-lg font-semibold text-slate-800 dark:text-slate-100">Add a question</h3>
           <form onSubmit={addQuestion} className="space-y-3">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:items-end">
               <Field label="Type">
@@ -314,7 +381,7 @@ export default function TestEditorPage() {
                         title="Mark correct"
                       />
                     )}
-                    <span className="w-4 text-sm font-medium text-slate-500">{opt}</span>
+                    <span className="w-4 text-sm font-medium text-slate-500 dark:text-slate-400">{opt}</span>
                     <Input
                       value={q[`option${opt}`]}
                       onChange={(e) => setQ({ ...q, [`option${opt}`]: e.target.value })}
@@ -323,7 +390,7 @@ export default function TestEditorPage() {
                     />
                   </div>
                 ))}
-                <p className="text-xs text-slate-400 sm:col-span-2">
+                <p className="text-xs text-slate-400 dark:text-slate-500 sm:col-span-2">
                   {q.type === 'MCQ' ? 'Select the one correct option.' : 'Tick all correct options.'}
                 </p>
               </div>
@@ -348,7 +415,7 @@ export default function TestEditorPage() {
                   value={q.acceptedAnswers}
                   onChange={(e) => setQ({ ...q, acceptedAnswers: e.target.value })}
                   placeholder={'newton\nnewtons'}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/30"
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/30"
                   required
                 />
               </Field>
@@ -361,30 +428,114 @@ export default function TestEditorPage() {
         </CardBody>
       </Card>
 
-      {/* Questions list */}
+      {/* Sections */}
       <Card>
         <CardBody>
-          <h3 className="mb-3 text-lg font-semibold text-slate-800">Questions ({test.questions.length})</h3>
-          {test.questions.length === 0 ? (
-            <p className="text-sm text-slate-500">No questions yet. Add some above or import from Excel.</p>
-          ) : (
-            <ol className="space-y-3">
-              {test.questions.map((question, i) => (
-                <li key={question.id} className="rounded-lg border border-slate-100 p-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="font-medium text-slate-700">
-                      {i + 1}. {question.text}{' '}
-                      <Badge>{question.type}</Badge>{' '}
-                      <span className="text-xs font-normal text-slate-400">({question.marks} marks)</span>
-                    </p>
-                    <Button variant="ghost" onClick={() => deleteQuestion(question.id)} disabled={busy}>
+          <h3 className="mb-2 text-lg font-semibold text-slate-800 dark:text-slate-100">Sections</h3>
+          <p className="mb-3 text-sm text-slate-500 dark:text-slate-400">
+            Group questions under labeled sections. The whole test still runs on one overall timer. Leave a question
+            ungrouped to keep it in the default list.
+          </p>
+          <form onSubmit={createSection} className="flex flex-wrap items-end gap-3">
+            <div className="flex-1 min-w-[12rem]">
+              <Field label="New section label">
+                <Input
+                  value={sectionLabel}
+                  onChange={(e) => setSectionLabel(e.target.value)}
+                  placeholder="e.g. Physics"
+                  required
+                />
+              </Field>
+            </div>
+            <Button type="submit" disabled={busy}>
+              Add section
+            </Button>
+          </form>
+          {(test.sections || []).length > 0 && (
+            <ul className="mt-3 space-y-2">
+              {[...test.sections]
+                .sort((a, b) => a.position - b.position)
+                .map((section) => (
+                  <li
+                    key={section.id}
+                    className="flex items-center justify-between rounded-lg border border-slate-100 dark:border-slate-700 px-3 py-2"
+                  >
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{section.label}</span>
+                    <Button variant="ghost" onClick={() => deleteSection(section.id)} disabled={busy}>
                       Delete
                     </Button>
-                  </div>
-                  <QuestionPreview question={question} />
-                </li>
-              ))}
-            </ol>
+                  </li>
+                ))}
+            </ul>
+          )}
+        </CardBody>
+      </Card>
+
+      {/* Questions list (grouped under section labels; ungrouped fallback) */}
+      <Card>
+        <CardBody>
+          <h3 className="mb-3 text-lg font-semibold text-slate-800 dark:text-slate-100">Questions ({test.questions.length})</h3>
+          {test.questions.length === 0 ? (
+            <p className="text-sm text-slate-500 dark:text-slate-400">No questions yet. Add some above or import from Excel.</p>
+          ) : (
+            (() => {
+              let n = 0;
+              return groupBySection(test.questions, test.sections).map((group, gi) => (
+                <div key={group.section?.id ?? `ungrouped-${gi}`} className="mb-4 last:mb-0">
+                  {group.section && (
+                    <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                      {group.section.label}
+                    </h4>
+                  )}
+                  <ol className="space-y-3">
+                    {group.questions.map((question) => {
+                      const num = (n += 1);
+                      return (
+                        <li key={question.id} className="rounded-lg border border-slate-100 dark:border-slate-700 p-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <p className="font-medium text-slate-700 dark:text-slate-200">
+                              {num}. {question.text}{' '}
+                              <Badge>{question.type}</Badge>{' '}
+                              <span className="text-xs font-normal text-slate-400 dark:text-slate-500">({question.marks} marks)</span>
+                            </p>
+                            <Button variant="ghost" onClick={() => deleteQuestion(question.id)} disabled={busy}>
+                              Delete
+                            </Button>
+                          </div>
+                          <QuestionImage
+                            questionId={question.id}
+                            imageKey={question.imageKey || question.image_key}
+                          />
+                          <QuestionPreview question={question} />
+                          {(test.sections || []).length > 0 && (
+                            <div className="mt-2 flex items-center gap-2">
+                              <span className="text-xs text-slate-400 dark:text-slate-500">Section</span>
+                              <Select
+                                value={question.sectionId ?? ''}
+                                onChange={(e) =>
+                                  assignQuestionSection(question.id, e.target.value ? Number(e.target.value) : null)
+                                }
+                                disabled={busy}
+                                className="w-48"
+                              >
+                                <option value="">Ungrouped</option>
+                                {[...test.sections]
+                                  .sort((a, b) => a.position - b.position)
+                                  .map((section) => (
+                                    <option key={section.id} value={section.id}>
+                                      {section.label}
+                                    </option>
+                                  ))}
+                              </Select>
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ol>
+                </div>
+              ));
+            })()
           )}
         </CardBody>
       </Card>
@@ -405,7 +556,7 @@ function QuestionPreview({ question }) {
             className={
               correct.has(opt)
                 ? 'rounded bg-green-50 px-2 py-1 font-medium text-green-700'
-                : 'px-2 py-1 text-slate-600'
+                : 'px-2 py-1 text-slate-600 dark:text-slate-300'
             }
           >
             {opt}. {question[`option${opt}`]}

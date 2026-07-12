@@ -62,8 +62,8 @@ export default function AccountPage() {
 
   return (
     <div className="mx-auto max-w-lg">
-      <h1 className="mb-1 text-xl font-semibold text-slate-800">Account settings</h1>
-      <p className="mb-5 text-sm text-slate-500">Update your login email and password.</p>
+      <h1 className="mb-1 text-xl font-semibold text-slate-800 dark:text-slate-100">Account settings</h1>
+      <p className="mb-5 text-sm text-slate-500 dark:text-slate-400">Update your login email and password.</p>
 
       <Card>
         <CardBody>
@@ -80,8 +80,8 @@ export default function AccountPage() {
               />
             </Field>
 
-            <div className="border-t border-slate-200 pt-4">
-              <p className="mb-3 text-sm font-medium text-slate-700">Change password (optional)</p>
+            <div className="border-t border-slate-200 pt-4 dark:border-slate-700">
+              <p className="mb-3 text-sm font-medium text-slate-700 dark:text-slate-200">Change password (optional)</p>
               <div className="space-y-4">
                 <Field label="New password">
                   <Input
@@ -103,7 +103,7 @@ export default function AccountPage() {
               </div>
             </div>
 
-            <div className="border-t border-slate-200 pt-4">
+            <div className="border-t border-slate-200 pt-4 dark:border-slate-700">
               <Field label="Current password (required to save changes)">
                 <Input
                   type="password"

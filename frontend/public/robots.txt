@@ -1,0 +1,11 @@
+# Vidyapeeth robots policy.
+# Allow crawling of the public landing page; keep authenticated application
+# routes out of search indexes.
+User-agent: *
+Allow: /$
+Disallow: /admin
+Disallow: /student
+Disallow: /superadmin
+Disallow: /login
+
+Sitemap: https://vidyapeeth.in/sitemap.xml

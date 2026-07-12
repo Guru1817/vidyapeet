@@ -14,13 +14,13 @@ import com.vidyapeet.exam.dto.UpdateTestRequest;
 import com.vidyapeet.exam.repository.BatchTestRepository;
 import com.vidyapeet.exam.repository.MockTestRepository;
 import com.vidyapeet.exam.repository.QuestionRepository;
+import com.vidyapeet.exam.repository.TestQuestionReferenceRepository;
 import com.vidyapeet.library.repository.LibraryFolderRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,30 +34,36 @@ public class ExamService {
 
     private final MockTestRepository testRepository;
     private final QuestionRepository questionRepository;
+    private final TestQuestionReferenceRepository referenceRepository;
     private final BatchRepository batchRepository;
     private final LibraryFolderRepository folderRepository;
     private final BatchTestRepository batchTestRepository;
     private final TestAttemptRepository attemptRepository;
     private final AttemptAnswerRepository answerRepository;
     private final QuestionExcelImporter excelImporter;
+    private final QuestionBankService questionBankService;
 
     public ExamService(
             MockTestRepository testRepository,
             QuestionRepository questionRepository,
+            TestQuestionReferenceRepository referenceRepository,
             BatchRepository batchRepository,
             LibraryFolderRepository folderRepository,
             BatchTestRepository batchTestRepository,
             TestAttemptRepository attemptRepository,
             AttemptAnswerRepository answerRepository,
-            QuestionExcelImporter excelImporter) {
+            QuestionExcelImporter excelImporter,
+            QuestionBankService questionBankService) {
         this.testRepository = testRepository;
         this.questionRepository = questionRepository;
+        this.referenceRepository = referenceRepository;
         this.batchRepository = batchRepository;
         this.folderRepository = folderRepository;
         this.batchTestRepository = batchTestRepository;
         this.attemptRepository = attemptRepository;
         this.answerRepository = answerRepository;
         this.excelImporter = excelImporter;
+        this.questionBankService = questionBankService;
     }
 
     @Transactional
@@ -102,7 +108,7 @@ public class ExamService {
             }
         }
         return byId.values().stream()
-                .map(t -> TestResponse.from(t, questionRepository.countByTestId(t.getId())))
+                .map(t -> TestResponse.from(t, referenceRepository.countByTestId(t.getId())))
                 .toList();
     }
 
@@ -110,14 +116,23 @@ public class ExamService {
     @Transactional(readOnly = true)
     public List<TestResponse> listLibraryTests(Long folderId) {
         return testRepository.findByFolderIdOrderByCreatedAtDesc(folderId).stream()
-                .map(t -> TestResponse.from(t, questionRepository.countByTestId(t.getId())))
+                .map(t -> TestResponse.from(t, referenceRepository.countByTestId(t.getId())))
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public TestDetailResponse getTest(Long id) {
         MockTest test = requireTest(id);
-        return TestDetailResponse.from(test, questionRepository.findByTestId(id));
+        List<Question> questions = referenceRepository.findResolvedQuestions(id);
+        // Map each referenced bank question to the section it is grouped under within this
+        // test (null = ungrouped); a bank question is referenced at most once per test.
+        Map<Long, Long> sectionByQuestionId = new HashMap<>();
+        for (TestQuestionReference reference
+                : referenceRepository.findByTestIdOrderBySectionPositionAscPositionAsc(id)) {
+            sectionByQuestionId.put(reference.getBankQuestionId(), reference.getSectionId());
+        }
+        return TestDetailResponse.from(
+                test, questions, sectionByQuestionId, questionBankService.listSections(id));
     }
 
     @Transactional
@@ -130,7 +145,7 @@ public class ExamService {
         }
         test.setNegativeMarking(request.negativeMarking());
         test.setNegativeMarkPerWrong(request.negativeMarkPerWrong() == null ? 0 : request.negativeMarkPerWrong());
-        long questionCount = questionRepository.countByTestId(id);
+        long questionCount = referenceRepository.countByTestId(id);
         if (request.published() && questionCount == 0) {
             throw Exceptions.badRequest("A test must have at least one question before it can be published.");
         }
@@ -149,35 +164,40 @@ public class ExamService {
         }
         attemptRepository.deleteByTestId(id);
         batchTestRepository.deleteByTestId(id);
-        questionRepository.deleteByTestId(id);
+        // Reference-aware cleanup: drop this test's references only; the bank questions
+        // they point to remain in the institute Question Bank for reuse by other tests.
+        referenceRepository.deleteByTestId(id);
         testRepository.delete(test);
     }
 
     @Transactional
     public QuestionResponse addQuestion(Long testId, QuestionRequest request) {
         requireTest(testId);
-        Question question = applyRequest(new Question(), testId, request);
-        question = questionRepository.save(question);
-        recomputeTotalMarks(testId);
-        return QuestionResponse.from(question);
+        // The per-test editor flow attaches to the shared bank: create the bank
+        // question, then reference it from this test (no per-test content copy).
+        QuestionResponse created = questionBankService.createBankQuestion(request);
+        questionBankService.attachReference(testId, created.id());
+        return created;
     }
 
     @Transactional
     public QuestionResponse updateQuestion(Long testId, Long questionId, QuestionRequest request) {
         requireTest(testId);
-        Question question = requireQuestion(testId, questionId);
-        applyRequest(question, testId, request);
-        question = questionRepository.save(question);
-        recomputeTotalMarks(testId);
-        return QuestionResponse.from(question);
+        requireQuestion(testId, questionId);
+        // Editing the bank question in place reflects in every referencing test (Req 6.4).
+        return questionBankService.updateBankQuestion(questionId, request);
     }
 
     @Transactional
     public void deleteQuestion(Long testId, Long questionId) {
         requireTest(testId);
-        Question question = requireQuestion(testId, questionId);
-        questionRepository.delete(question);
-        recomputeTotalMarks(testId);
+        requireQuestion(testId, questionId);
+        // Detach the reference from this test; only remove the bank question itself when
+        // no other test still references it (retain shared bank questions — Req 6.9).
+        questionBankService.detachReference(testId, questionId);
+        if (referenceRepository.findByBankQuestionId(questionId).isEmpty()) {
+            questionRepository.deleteById(questionId);
+        }
     }
 
     @Transactional
@@ -185,84 +205,10 @@ public class ExamService {
         requireTest(testId);
         List<QuestionRequest> parsed = excelImporter.parse(file);
         for (QuestionRequest request : parsed) {
-            questionRepository.save(applyRequest(new Question(), testId, request));
+            QuestionResponse created = questionBankService.createBankQuestion(request);
+            questionBankService.attachReference(testId, created.id());
         }
-        recomputeTotalMarks(testId);
         return parsed.size();
-    }
-
-    private Question applyRequest(Question question, Long testId, QuestionRequest request) {
-        question.setTestId(testId);
-        question.setType(request.type());
-        question.setText(request.text());
-        question.setMarks(request.marks());
-
-        switch (request.type()) {
-            case MCQ -> {
-                requireOptions(request);
-                if (request.correctOption() == null) {
-                    throw Exceptions.badRequest("Select the correct option for an MCQ question.");
-                }
-                setOptions(question, request);
-                question.setCorrectAnswer(request.correctOption().name());
-            }
-            case MSQ -> {
-                requireOptions(request);
-                if (request.correctOptions() == null || request.correctOptions().isEmpty()) {
-                    throw Exceptions.badRequest("Select at least one correct option for an MSQ question.");
-                }
-                setOptions(question, request);
-                question.setCorrectAnswer(AnswerCodec.encodeOptions(request.correctOptions()));
-            }
-            case TRUE_FALSE -> {
-                if (request.correctBoolean() == null) {
-                    throw Exceptions.badRequest("Specify whether the statement is true or false.");
-                }
-                clearOptions(question);
-                question.setCorrectAnswer(request.correctBoolean() ? "TRUE" : "FALSE");
-            }
-            case FILL_BLANK -> {
-                List<String> accepted = request.acceptedAnswers() == null
-                        ? List.of()
-                        : request.acceptedAnswers().stream().filter(StringUtils::hasText).toList();
-                if (accepted.isEmpty()) {
-                    throw Exceptions.badRequest("Provide at least one accepted answer for a fill-in-the-blank question.");
-                }
-                clearOptions(question);
-                question.setCorrectAnswer(AnswerCodec.encodeAccepted(accepted));
-            }
-        }
-        return question;
-    }
-
-    private void requireOptions(QuestionRequest request) {
-        if (!StringUtils.hasText(request.optionA()) || !StringUtils.hasText(request.optionB())
-                || !StringUtils.hasText(request.optionC()) || !StringUtils.hasText(request.optionD())) {
-            throw Exceptions.badRequest("All four options are required for MCQ/MSQ questions.");
-        }
-    }
-
-    private void setOptions(Question question, QuestionRequest request) {
-        question.setOptionA(request.optionA());
-        question.setOptionB(request.optionB());
-        question.setOptionC(request.optionC());
-        question.setOptionD(request.optionD());
-    }
-
-    private void clearOptions(Question question) {
-        question.setOptionA(null);
-        question.setOptionB(null);
-        question.setOptionC(null);
-        question.setOptionD(null);
-    }
-
-    private void recomputeTotalMarks(Long testId) {
-        int total = questionRepository.findByTestId(testId).stream()
-                .mapToInt(Question::getMarks)
-                .sum();
-        MockTest test = requireTest(testId);
-        test.setTotalMarks(total);
-        testRepository.save(test);
     }
 
     private void requireBatch(Long batchId) {
@@ -285,7 +231,7 @@ public class ExamService {
     private Question requireQuestion(Long testId, Long questionId) {
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> Exceptions.notFound("No question found with id " + questionId + "."));
-        if (!question.getTestId().equals(testId)) {
+        if (!referenceRepository.existsByTestIdAndBankQuestionId(testId, questionId)) {
             throw Exceptions.notFound("No question found with id " + questionId + " for this test.");
         }
         return question;

@@ -116,8 +116,8 @@ export default function InstitutesPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-slate-800">Coaching centers</h2>
-          <p className="text-sm text-slate-500">Create and manage tenant portals.</p>
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">Coaching centers</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Create and manage tenant portals.</p>
         </div>
         <Button onClick={showForm ? closeForm : openCreate}>{showForm ? 'Cancel' : 'New institute'}</Button>
       </div>
@@ -128,7 +128,7 @@ export default function InstitutesPage() {
       {showForm && (
         <Card>
           <CardBody>
-            <h3 className="mb-3 text-lg font-semibold text-slate-800">
+            <h3 className="mb-3 text-lg font-semibold text-slate-800 dark:text-slate-100">
               {isEditing ? `Edit ${form.name}` : 'New institute'}
             </h3>
             <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -149,7 +149,7 @@ export default function InstitutesPage() {
                   type="color"
                   value={form.primaryColor}
                   onChange={(e) => update('primaryColor', e.target.value)}
-                  className="h-10 w-full rounded-lg border border-slate-300"
+                  className="h-10 w-full rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-900"
                 />
               </Field>
               <Field label="Logo URL (optional)">
@@ -158,8 +158,8 @@ export default function InstitutesPage() {
 
               {!isEditing && (
                 <>
-                  <div className="sm:col-span-2 mt-2 border-t border-slate-100 pt-3">
-                    <p className="text-sm font-medium text-slate-600">First admin account</p>
+                  <div className="sm:col-span-2 mt-2 border-t border-slate-100 pt-3 dark:border-slate-700">
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-300">First admin account</p>
                   </div>
                   <Field label="Admin name">
                     <Input value={form.adminName} onChange={(e) => update('adminName', e.target.value)} required />
@@ -213,7 +213,7 @@ export default function InstitutesPage() {
                     />
                   )}
                   <div>
-                    <p className="font-medium text-slate-800">{inst.name}</p>
+                    <p className="font-medium text-slate-800 dark:text-slate-100">{inst.name}</p>
                     <Badge>{inst.slug}</Badge>
                   </div>
                 </div>

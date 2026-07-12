@@ -6,6 +6,8 @@ import { useBranding } from '../branding/BrandingContext';
 import { getTenantSlug } from '../lib/tenant';
 import { errorMessage } from '../api/client';
 import { Alert, Button, Card, CardBody, Field, Input } from '../components/ui';
+import BrandLogo from '../components/BrandLogo';
+import ThemeToggle from '../theme/ThemeToggle';
 
 export default function LoginPage() {
   const { login, registerStudent } = useAuth();
@@ -38,18 +40,20 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
+    <div className="relative flex min-h-screen items-center justify-center px-4">
+      {/* Theme toggle available to logged-out users (Req 4.1). */}
+      <div className="absolute right-4 top-4">
+        <ThemeToggle />
+      </div>
       <div className="w-full max-w-md">
         <div className="mb-6 text-center">
           {branding.logoUrl ? (
             <img src={branding.logoUrl} alt={branding.name} className="mx-auto mb-3 h-14 object-contain" />
           ) : (
-            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-brand text-2xl font-bold text-white">
-              {branding.name?.charAt(0) || 'V'}
-            </div>
+            <BrandLogo variant="icon" className="mx-auto mb-3 h-14 w-14 text-brand" />
           )}
-          <h1 className="text-2xl font-semibold text-slate-800">{branding.name}</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-2xl font-semibold text-slate-800 dark:text-slate-100">{branding.name}</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             {mode === 'login' ? 'Sign in to your account' : 'Create your student account'}
           </p>
         </div>
@@ -91,7 +95,7 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            <div className="mt-4 text-center text-sm text-slate-500">
+            <div className="mt-4 text-center text-sm text-slate-500 dark:text-slate-400">
               {mode === 'login' ? (
                 <button className="text-brand hover:underline" onClick={() => setMode('register')}>
                   New student? Create an account

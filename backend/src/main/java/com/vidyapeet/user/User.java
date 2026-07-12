@@ -55,6 +55,10 @@ public class User {
     @Column(nullable = false, length = 32)
     private Role role;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "theme_preference", nullable = false, length = 8)
+    private ThemePreference themePreference = ThemePreference.LIGHT;
+
     /** Optional free-text notes about a student (set by the institute admin). */
     @Column(length = 1000)
     private String description;

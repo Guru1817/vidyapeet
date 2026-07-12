@@ -9,8 +9,10 @@ import com.vidyapeet.common.Role;
 import com.vidyapeet.common.exception.Exceptions;
 import com.vidyapeet.institute.Institute;
 import com.vidyapeet.institute.repository.InstituteRepository;
+import com.vidyapeet.auth.dto.ThemeUpdateRequest;
 import com.vidyapeet.security.JwtService;
 import com.vidyapeet.security.UserPrincipal;
+import com.vidyapeet.user.ThemePreference;
 import com.vidyapeet.user.User;
 import com.vidyapeet.user.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -131,6 +133,31 @@ public class AuthService {
         return buildAuthResponse(user, institute);
     }
 
+    /**
+     * Persists the authenticated user's theme preference. The raw value is
+     * validated against {@link ThemePreference}; an unknown value yields a 400.
+     */
+    @Transactional
+    public UserSummary updateTheme(UserPrincipal principal, ThemeUpdateRequest request) {
+        ThemePreference theme = parseTheme(request.theme());
+        User user = userRepository.findById(principal.getUserId())
+                .orElseThrow(() -> Exceptions.unauthorized("Account no longer exists."));
+        user.setThemePreference(theme);
+        user = userRepository.save(user);
+        Institute institute = user.getInstituteId() == null
+                ? null
+                : instituteRepository.findById(user.getInstituteId()).orElse(null);
+        return toSummary(user, institute);
+    }
+
+    private ThemePreference parseTheme(String value) {
+        try {
+            return ThemePreference.valueOf(value.trim().toUpperCase());
+        } catch (IllegalArgumentException | NullPointerException ex) {
+            throw Exceptions.badRequest("Theme must be one of: LIGHT, DARK.");
+        }
+    }
+
     @Transactional(readOnly = true)
     public UserSummary currentUser(UserPrincipal principal) {
         User user = userRepository.findById(principal.getUserId())
@@ -153,6 +180,7 @@ public class AuthService {
                 user.getEmail(),
                 user.getRole(),
                 user.getInstituteId(),
-                institute == null ? null : institute.getSlug());
+                institute == null ? null : institute.getSlug(),
+                user.getThemePreference());
     }
 }

@@ -21,8 +21,8 @@ export default function StudentPerformancePage() {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-xl font-semibold text-slate-800">My performance</h2>
-        <p className="text-sm text-slate-500">Your results across all submitted tests.</p>
+        <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">My performance</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400">Your results across all submitted tests.</p>
       </div>
       <PerformanceView summary={summary} />
     </div>

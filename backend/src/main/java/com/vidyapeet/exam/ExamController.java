@@ -1,8 +1,12 @@
 package com.vidyapeet.exam;
 
+import com.vidyapeet.exam.dto.AssignReferenceSectionRequest;
+import com.vidyapeet.exam.dto.CreateReferenceRequest;
 import com.vidyapeet.exam.dto.CreateTestRequest;
 import com.vidyapeet.exam.dto.QuestionRequest;
 import com.vidyapeet.exam.dto.QuestionResponse;
+import com.vidyapeet.exam.dto.SectionRequest;
+import com.vidyapeet.exam.dto.SectionResponse;
 import com.vidyapeet.exam.dto.TestDetailResponse;
 import com.vidyapeet.exam.dto.TestResponse;
 import com.vidyapeet.exam.dto.UpdateTestRequest;
@@ -33,9 +37,11 @@ import java.util.Map;
 public class ExamController {
 
     private final ExamService examService;
+    private final QuestionBankService questionBankService;
 
-    public ExamController(ExamService examService) {
+    public ExamController(ExamService examService, QuestionBankService questionBankService) {
         this.examService = examService;
+        this.questionBankService = questionBankService;
     }
 
     @PostMapping
@@ -88,5 +94,61 @@ public class ExamController {
         int imported = examService.importQuestions(id, file);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Map.of("imported", imported));
+    }
+
+    /** Attach a bank question to this test by reference (no content copy). */
+    @PostMapping("/{id}/references")
+    public ResponseEntity<Void> createReference(
+            @PathVariable Long id, @Valid @RequestBody CreateReferenceRequest request) {
+        questionBankService.attachReference(id, request.bankQuestionId(), request.sectionId());
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    /** Detach a bank question from this test, retaining it in the bank (Req 6.9). */
+    @DeleteMapping("/{id}/references")
+    public ResponseEntity<Void> deleteReference(
+            @PathVariable Long id, @RequestParam Long bankQuestionId) {
+        questionBankService.detachReference(id, bankQuestionId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // -----------------------------------------------------------------
+    // Test sections (labeled groupings under one overall timer — Req 7)
+    // -----------------------------------------------------------------
+
+    /** Sections of a test in display order (Req 7.1). */
+    @GetMapping("/{id}/sections")
+    public List<SectionResponse> listSections(@PathVariable Long id) {
+        return questionBankService.listSections(id);
+    }
+
+    /** Create a labeled section for a test (Req 7.1). */
+    @PostMapping("/{id}/sections")
+    public ResponseEntity<SectionResponse> createSection(
+            @PathVariable Long id, @Valid @RequestBody SectionRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(questionBankService.createSection(id, request));
+    }
+
+    /** Rename and/or reorder a section (Req 7.1). */
+    @PutMapping("/{id}/sections/{sectionId}")
+    public SectionResponse updateSection(
+            @PathVariable Long id, @PathVariable Long sectionId, @Valid @RequestBody SectionRequest request) {
+        return questionBankService.updateSection(id, sectionId, request);
+    }
+
+    /** Delete a section; its references are moved back to the ungrouped list (Req 7.8). */
+    @DeleteMapping("/{id}/sections/{sectionId}")
+    public ResponseEntity<Void> deleteSection(@PathVariable Long id, @PathVariable Long sectionId) {
+        questionBankService.deleteSection(id, sectionId);
+        return ResponseEntity.noContent().build();
+    }
+
+    /** Group (or ungroup) a reference under a section (Req 7.2). */
+    @PutMapping("/{id}/references/section")
+    public ResponseEntity<Void> assignReferenceToSection(
+            @PathVariable Long id, @Valid @RequestBody AssignReferenceSectionRequest request) {
+        questionBankService.assignReferenceToSection(id, request.bankQuestionId(), request.sectionId());
+        return ResponseEntity.noContent().build();
     }
 }

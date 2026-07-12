@@ -1,7 +1,9 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useAuth } from './auth/AuthContext';
 import ProtectedRoute, { homeFor } from './auth/ProtectedRoute';
+import { LANDING, resolveView } from './routing/resolveView';
 import PortalLayout from './components/PortalLayout';
+import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import AccountPage from './pages/AccountPage';
 import InstitutesPage from './pages/superadmin/InstitutesPage';
@@ -46,6 +48,20 @@ const SUPERADMIN_NAV = [
 ];
 
 export default function App() {
+  const { user } = useAuth();
+
+  // Apex-vs-portal resolution (Track A). The public marketing landing page is
+  // served only at the bare apex domain for an unauthenticated session; every
+  // institute subdomain and every authenticated session renders the SPA.
+  if (resolveView(window.location.hostname, Boolean(user)) === LANDING) {
+    return (
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    );
+  }
+
   return (
     <Routes>
       <Route path="/" element={<RootRedirect />} />

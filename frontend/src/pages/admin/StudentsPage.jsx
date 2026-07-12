@@ -100,8 +100,8 @@ export default function StudentsPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-slate-800">Students</h2>
-          <p className="text-sm text-slate-500">All students in your institute.</p>
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">Students</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">All students in your institute.</p>
         </div>
         <Button onClick={showForm ? close : openCreate}>{showForm ? 'Cancel' : 'Add student'}</Button>
       </div>
@@ -112,7 +112,7 @@ export default function StudentsPage() {
       {showForm && (
         <Card>
           <CardBody>
-            <h3 className="mb-3 text-lg font-semibold text-slate-800">
+            <h3 className="mb-3 text-lg font-semibold text-slate-800 dark:text-slate-100">
               {isEditing ? `Edit ${form.name}` : 'New student'}
             </h3>
             <form onSubmit={submit} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -158,13 +158,13 @@ export default function StudentsPage() {
       ) : (
         <Card>
           <CardBody className="p-0">
-            <ul className="divide-y divide-slate-100">
+            <ul className="divide-y divide-slate-100 dark:divide-slate-700">
               {students.map((s) => (
                 <li key={s.id} className="flex items-start justify-between gap-3 px-5 py-3">
                   <div>
-                    <p className="font-medium text-slate-800">{s.name}</p>
-                    <p className="text-sm text-slate-400">{s.email}</p>
-                    {s.description && <p className="mt-1 text-sm text-slate-500">{s.description}</p>}
+                    <p className="font-medium text-slate-800 dark:text-slate-100">{s.name}</p>
+                    <p className="text-sm text-slate-400 dark:text-slate-500">{s.email}</p>
+                    {s.description && <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{s.description}</p>}
                   </div>
                   <div className="flex shrink-0 gap-1">
                     <Button variant="secondary" onClick={() => openEdit(s)}>

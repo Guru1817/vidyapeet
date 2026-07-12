@@ -1,6 +1,9 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
+  // Class-based dark mode: ThemeContext toggles the `dark` class on
+  // document.documentElement, so `dark:` variants activate app-wide.
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {

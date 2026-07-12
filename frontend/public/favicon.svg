@@ -1,0 +1,11 @@
+<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Vidyapeeth">
+  <title>Vidyapeeth</title>
+  <!-- Mirrors the BrandLogo `icon` variant: a graduation cap over an open book.
+       Uses the brand color so the favicon reads on light and dark browser chrome. -->
+  <g fill="none" stroke="#2563eb" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M20 15 L4 22 L20 29 L36 22 Z" />
+    <path d="M36 22 L36 30" />
+    <circle cx="36" cy="32" r="1.6" fill="#2563eb" stroke="none" />
+    <path d="M8 26 L8 33 C12 30 16 30 20 32 C24 30 28 30 32 33 L32 26" />
+  </g>
+</svg>

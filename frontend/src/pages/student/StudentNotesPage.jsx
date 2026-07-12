@@ -19,8 +19,8 @@ export default function StudentNotesPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-xl font-semibold text-slate-800">Study materials</h2>
-        <p className="text-sm text-slate-500">Notes shared with your batches.</p>
+        <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">Study materials</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400">Notes shared with your batches.</p>
       </div>
 
       {error && <Alert>{error}</Alert>}
@@ -33,7 +33,7 @@ export default function StudentNotesPage() {
             <Card key={n.id}>
               <CardBody className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-slate-800">{n.title}</p>
+                  <p className="font-medium text-slate-800 dark:text-slate-100">{n.title}</p>
                   <Badge>{n.subject}</Badge>
                 </div>
                 <Button variant="secondary" onClick={() => downloadFile(n.downloadUrl, `${n.title}.pdf`)}>

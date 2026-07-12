@@ -1,6 +1,8 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { useBranding } from '../branding/BrandingContext';
+import BrandLogo from './BrandLogo';
+import ThemeToggle from '../theme/ThemeToggle';
 
 const ROLE_LABEL = {
   SUPER_ADMIN: 'Platform Owner',
@@ -26,9 +28,7 @@ export default function PortalLayout({ navItems = [] }) {
             {branding.logoUrl ? (
               <img src={branding.logoUrl} alt={branding.name} className="h-9 w-9 rounded bg-white object-contain p-0.5" />
             ) : (
-              <div className="flex h-9 w-9 items-center justify-center rounded bg-white/20 font-bold">
-                {branding.name?.charAt(0) || 'V'}
-              </div>
+              <BrandLogo variant="icon" className="h-9 w-9 text-white" />
             )}
             <div>
               <p className="text-sm font-semibold leading-tight">{branding.name}</p>
@@ -37,6 +37,7 @@ export default function PortalLayout({ navItems = [] }) {
           </div>
           <div className="flex items-center gap-4">
             <span className="hidden text-sm text-white/90 sm:inline">{user?.name}</span>
+            <ThemeToggle className="border-white/30 text-white hover:bg-white/15 dark:border-white/30 dark:text-white dark:hover:bg-white/15" />
             <button
               onClick={handleLogout}
               className="rounded-lg bg-white/15 px-3 py-1.5 text-sm font-medium hover:bg-white/25"

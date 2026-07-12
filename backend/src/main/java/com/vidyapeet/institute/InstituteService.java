@@ -9,6 +9,7 @@ import com.vidyapeet.common.exception.Exceptions;
 import com.vidyapeet.exam.repository.BatchTestRepository;
 import com.vidyapeet.exam.repository.MockTestRepository;
 import com.vidyapeet.exam.repository.QuestionRepository;
+import com.vidyapeet.exam.repository.TestQuestionReferenceRepository;
 import com.vidyapeet.institute.dto.CreateInstituteRequest;
 import com.vidyapeet.institute.dto.InstituteResponse;
 import com.vidyapeet.institute.dto.UpdateInstituteRequest;
@@ -41,6 +42,7 @@ public class InstituteService {
     private final AttemptAnswerRepository attemptAnswerRepository;
     private final TestAttemptRepository testAttemptRepository;
     private final QuestionRepository questionRepository;
+    private final TestQuestionReferenceRepository referenceRepository;
     private final MockTestRepository mockTestRepository;
     private final NoteRepository noteRepository;
     private final BatchStudentRepository batchStudentRepository;
@@ -57,6 +59,7 @@ public class InstituteService {
             AttemptAnswerRepository attemptAnswerRepository,
             TestAttemptRepository testAttemptRepository,
             QuestionRepository questionRepository,
+            TestQuestionReferenceRepository referenceRepository,
             MockTestRepository mockTestRepository,
             NoteRepository noteRepository,
             BatchStudentRepository batchStudentRepository,
@@ -71,6 +74,7 @@ public class InstituteService {
         this.attemptAnswerRepository = attemptAnswerRepository;
         this.testAttemptRepository = testAttemptRepository;
         this.questionRepository = questionRepository;
+        this.referenceRepository = referenceRepository;
         this.mockTestRepository = mockTestRepository;
         this.noteRepository = noteRepository;
         this.batchStudentRepository = batchStudentRepository;
@@ -151,6 +155,8 @@ public class InstituteService {
         attemptAnswerRepository.deleteByInstituteId(instituteId);
         testAttemptRepository.deleteByInstituteId(instituteId);
         batchTestRepository.deleteByInstituteId(instituteId);
+        // Remove reference rows before their referenced questions/tests to satisfy FKs.
+        referenceRepository.deleteByInstituteId(instituteId);
         questionRepository.deleteByInstituteId(instituteId);
         mockTestRepository.deleteByInstituteId(instituteId);
         batchLibraryFileRepository.deleteByInstituteId(instituteId);

@@ -4,6 +4,7 @@ import com.vidyapeet.auth.dto.AuthResponse;
 import com.vidyapeet.auth.dto.ChangeCredentialsRequest;
 import com.vidyapeet.auth.dto.LoginRequest;
 import com.vidyapeet.auth.dto.RegisterStudentRequest;
+import com.vidyapeet.auth.dto.ThemeUpdateRequest;
 import com.vidyapeet.auth.dto.UserSummary;
 import com.vidyapeet.security.SecurityUtils;
 import jakarta.validation.Valid;
@@ -45,5 +46,11 @@ public class AuthController {
     @PutMapping("/me")
     public AuthResponse updateCredentials(@Valid @RequestBody ChangeCredentialsRequest request) {
         return authService.updateCredentials(SecurityUtils.currentUser(), request);
+    }
+
+    /** Persist the signed-in user's theme preference. */
+    @PutMapping("/me/theme")
+    public UserSummary updateTheme(@Valid @RequestBody ThemeUpdateRequest request) {
+        return authService.updateTheme(SecurityUtils.currentUser(), request);
     }
 }

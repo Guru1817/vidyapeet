@@ -44,8 +44,8 @@ export default function BatchesPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-slate-800">Batches</h2>
-          <p className="text-sm text-slate-500">Organize students, notes and tests by class.</p>
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">Batches</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Organize students, notes and tests by class.</p>
         </div>
         <Button onClick={() => setShowForm((s) => !s)}>{showForm ? 'Cancel' : 'New batch'}</Button>
       </div>
@@ -78,8 +78,8 @@ export default function BatchesPage() {
             <Link key={b.id} to={`/admin/batches/${b.id}`}>
               <Card className="h-full transition hover:shadow-md">
                 <CardBody>
-                  <p className="font-medium text-slate-800">{b.name}</p>
-                  {b.description && <p className="mt-1 line-clamp-2 text-sm text-slate-500">{b.description}</p>}
+                  <p className="font-medium text-slate-800 dark:text-slate-100">{b.name}</p>
+                  {b.description && <p className="mt-1 line-clamp-2 text-sm text-slate-500 dark:text-slate-400">{b.description}</p>}
                   <div className="mt-3">
                     <Badge kind="blue">{b.studentCount} students</Badge>
                   </div>

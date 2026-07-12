@@ -11,8 +11,11 @@ import lombok.Setter;
 import org.hibernate.annotations.Filter;
 
 /**
- * A question of any supported {@link QuestionType}. Options A–D apply only to
- * MCQ/MSQ; the correct answer is stored in canonical form (see {@link AnswerCodec}).
+ * A reusable bank question of any supported {@link QuestionType}, scoped to an
+ * institute (the per-institute Question Bank). Questions are no longer owned by a
+ * single test; membership in a test is modelled by {@link TestQuestionReference}.
+ * Options A–D apply only to MCQ/MSQ; the correct answer is stored in canonical form
+ * (see {@link AnswerCodec}).
  */
 @Entity
 @Table(name = "questions")
@@ -20,9 +23,6 @@ import org.hibernate.annotations.Filter;
 @Getter
 @Setter
 public class Question extends TenantBaseEntity {
-
-    @Column(name = "test_id", nullable = false)
-    private Long testId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 16)
@@ -49,4 +49,8 @@ public class Question extends TenantBaseEntity {
 
     @Column(nullable = false)
     private Integer marks = 1;
+
+    /** Opaque {@code StorageService} key for an attached question image; {@code null} when none. */
+    @Column(name = "image_key", length = 255)
+    private String imageKey;
 }

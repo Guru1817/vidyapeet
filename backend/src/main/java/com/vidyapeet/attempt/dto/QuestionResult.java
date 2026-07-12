@@ -15,6 +15,7 @@ public record QuestionResult(
         String selectedAnswer,
         boolean correct,
         double marksAwarded,
-        int marks
+        int marks,
+        String imageKey
 ) {
 }

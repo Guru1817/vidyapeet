@@ -22,8 +22,8 @@ export default function StudentTestsPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-xl font-semibold text-slate-800">Mock tests</h2>
-        <p className="text-sm text-slate-500">Tests assigned to your batches.</p>
+        <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">Mock tests</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400">Tests assigned to your batches.</p>
       </div>
 
       {error && <Alert>{error}</Alert>}
@@ -41,8 +41,8 @@ export default function StudentTestsPage() {
                 <CardBody>
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <p className="font-medium text-slate-800">{t.title}</p>
-                      <p className="mt-1 text-sm text-slate-500">
+                      <p className="font-medium text-slate-800 dark:text-slate-100">{t.title}</p>
+                      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                         {t.durationMinutes} min · {t.questionCount} questions · {t.totalMarks} marks
                         {t.negativeMarking ? ' · negative marking' : ''}
                       </p>

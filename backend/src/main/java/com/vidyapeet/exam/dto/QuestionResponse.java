@@ -24,9 +24,20 @@ public record QuestionResponse(
         List<AnswerOption> correctOptions,
         Boolean correctBoolean,
         List<String> acceptedAnswers,
-        Integer marks
+        Integer marks,
+        String imageKey,
+        Long sectionId
 ) {
     public static QuestionResponse from(Question q) {
+        return from(q, null);
+    }
+
+    /**
+     * Builds the response and records the section this question is grouped under within a
+     * particular test ({@code sectionId} is null when ungrouped or when the question is
+     * viewed outside a test context, e.g. the bank list).
+     */
+    public static QuestionResponse from(Question q, Long sectionId) {
         AnswerOption correctOption = null;
         List<AnswerOption> correctOptions = null;
         Boolean correctBoolean = null;
@@ -47,7 +58,7 @@ public record QuestionResponse(
                 q.getId(), q.getType(), q.getText(),
                 q.getOptionA(), q.getOptionB(), q.getOptionC(), q.getOptionD(),
                 q.getCorrectAnswer(), correctOption, correctOptions, correctBoolean, acceptedAnswers,
-                q.getMarks());
+                q.getMarks(), q.getImageKey(), sectionId);
     }
 
     private static AnswerOption parseOption(String s) {

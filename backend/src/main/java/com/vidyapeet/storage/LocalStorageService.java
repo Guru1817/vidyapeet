@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -20,8 +21,6 @@ import java.util.UUID;
  */
 @Service
 public class LocalStorageService implements StorageService {
-
-    private static final long MAX_BYTES = 10L * 1024 * 1024; // 10 MB
 
     private final Path root;
 
@@ -35,19 +34,11 @@ public class LocalStorageService implements StorageService {
     }
 
     @Override
-    public String store(MultipartFile file) {
-        if (file == null || file.isEmpty()) {
-            throw Exceptions.badRequest("File is required and must not be empty.");
-        }
-        if (file.getSize() > MAX_BYTES) {
-            throw Exceptions.badRequest("File exceeds the 10 MB limit.");
-        }
-        String contentType = file.getContentType();
-        if (contentType == null || !contentType.equalsIgnoreCase("application/pdf")) {
-            throw Exceptions.badRequest("Only PDF files are allowed.");
-        }
+    public String store(MultipartFile file, Set<String> allowedContentTypes, long maxBytes) {
+        String contentType = StoragePolicy.validate(file, allowedContentTypes, maxBytes);
 
-        String key = UUID.randomUUID().toString().replace("-", "") + ".pdf";
+        String key = UUID.randomUUID().toString().replace("-", "")
+                + StorageService.extensionForContentType(contentType);
         Path target = root.resolve(key).normalize();
         if (!target.startsWith(root)) {
             throw Exceptions.badRequest("Invalid file path.");

@@ -28,7 +28,7 @@ export default function LeaderboardPage() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-slate-800">Leaderboard</h2>
+        <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">Leaderboard</h2>
         <Button variant="ghost" onClick={() => navigate(-1)}>
           ← Back
         </Button>
@@ -39,7 +39,7 @@ export default function LeaderboardPage() {
       ) : (
         <Card>
           <CardBody className="p-0">
-            <ul className="divide-y divide-slate-100">
+            <ul className="divide-y divide-slate-100 dark:divide-slate-700">
               {entries.map((e) => {
                 const isMe = user?.role === 'STUDENT' && e.studentId === user.id;
                 return (
@@ -48,15 +48,15 @@ export default function LeaderboardPage() {
                     className={`flex items-center justify-between px-5 py-3 ${isMe ? 'bg-brand/5' : ''}`}
                   >
                     <div className="flex items-center gap-3">
-                      <span className="w-8 text-center text-lg font-semibold text-slate-500">
+                      <span className="w-8 text-center text-lg font-semibold text-slate-500 dark:text-slate-400">
                         {MEDAL[e.rank] || e.rank}
                       </span>
-                      <span className="font-medium text-slate-700">
+                      <span className="font-medium text-slate-700 dark:text-slate-200">
                         {e.studentName}
                         {isMe && <span className="ml-2 text-xs text-brand">(you)</span>}
                       </span>
                     </div>
-                    <span className="font-semibold text-slate-800">{formatScore(e.score)}</span>
+                    <span className="font-semibold text-slate-800 dark:text-slate-100">{formatScore(e.score)}</span>
                   </li>
                 );
               })}

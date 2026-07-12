@@ -4,6 +4,7 @@ import api, { errorMessage } from '../../api/client';
 import { formatScore } from '../../lib/format';
 import { Alert, Badge, Button, Card, CardBody } from '../../components/ui';
 import Spinner from '../../components/Spinner';
+import QuestionImage from '../../components/QuestionImage';
 
 const OPTS = ['A', 'B', 'C', 'D'];
 
@@ -32,12 +33,12 @@ export default function ResultPage() {
 
       <Card>
         <CardBody className="flex flex-col items-center gap-2 text-center">
-          <p className="text-sm text-slate-500">{result.title}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{result.title}</p>
           <div className="flex h-28 w-28 flex-col items-center justify-center rounded-full bg-brand/10">
             <span className="text-3xl font-bold text-brand">{formatScore(result.score)}</span>
-            <span className="text-xs text-slate-500">of {result.totalMarks}</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400">of {result.totalMarks}</span>
           </div>
-          <p className="text-lg font-semibold text-slate-800">{pct}%</p>
+          <p className="text-lg font-semibold text-slate-800 dark:text-slate-100">{pct}%</p>
           <Link to={`/student/tests/${testId}/leaderboard`}>
             <Button variant="secondary">View leaderboard</Button>
           </Link>
@@ -45,13 +46,13 @@ export default function ResultPage() {
       </Card>
 
       <div>
-        <h3 className="mb-3 text-lg font-semibold text-slate-800">Answer breakdown</h3>
+        <h3 className="mb-3 text-lg font-semibold text-slate-800 dark:text-slate-100">Answer breakdown</h3>
         <ol className="space-y-3">
           {result.breakdown.map((item, i) => (
             <Card key={item.questionId}>
               <CardBody>
                 <div className="flex items-start justify-between gap-3">
-                  <p className="font-medium text-slate-800">
+                  <p className="font-medium text-slate-800 dark:text-slate-100">
                     {i + 1}. {item.text} <Badge>{item.type}</Badge>
                   </p>
                   {item.correct ? (
@@ -60,9 +61,13 @@ export default function ResultPage() {
                     <Badge kind="amber">{formatScore(item.marksAwarded)} / {item.marks}</Badge>
                   )}
                 </div>
+                <QuestionImage
+                  questionId={item.questionId}
+                  imageKey={item.imageKey || item.image_key}
+                />
                 <Breakdown item={item} />
                 {!item.selectedAnswer && (
-                  <p className="mt-2 text-xs text-slate-400">You did not answer this question.</p>
+                  <p className="mt-2 text-xs text-slate-400 dark:text-slate-500">You did not answer this question.</p>
                 )}
               </CardBody>
             </Card>
@@ -82,9 +87,12 @@ function Breakdown({ item }) {
         {OPTS.map((opt) => {
           const isCorrect = correct.has(opt);
           const isChosen = chosen.has(opt);
-          let cls = 'px-2 py-1 text-slate-600';
-          if (isCorrect) cls = 'rounded bg-green-50 px-2 py-1 font-medium text-green-700';
-          else if (isChosen) cls = 'rounded bg-red-50 px-2 py-1 font-medium text-red-700';
+          let cls = 'px-2 py-1 text-slate-600 dark:text-slate-300';
+          if (isCorrect)
+            cls =
+              'rounded bg-green-50 px-2 py-1 font-medium text-green-700 dark:bg-green-900/40 dark:text-green-300';
+          else if (isChosen)
+            cls = 'rounded bg-red-50 px-2 py-1 font-medium text-red-700 dark:bg-red-900/40 dark:text-red-300';
           return (
             <li key={opt} className={cls}>
               {opt}. {item[`option${opt}`]}
@@ -99,9 +107,9 @@ function Breakdown({ item }) {
   if (item.type === 'TRUE_FALSE') {
     return (
       <div className="mt-2 space-y-1 text-sm">
-        <p className="text-green-700">Correct answer: {item.correctAnswer === 'TRUE' ? 'True' : 'False'}</p>
+        <p className="text-green-700 dark:text-green-400">Correct answer: {item.correctAnswer === 'TRUE' ? 'True' : 'False'}</p>
         {item.selectedAnswer && (
-          <p className={item.correct ? 'text-green-700' : 'text-red-700'}>
+          <p className={item.correct ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}>
             Your answer: {item.selectedAnswer === 'TRUE' ? 'True' : 'False'}
           </p>
         )}
@@ -111,9 +119,9 @@ function Breakdown({ item }) {
   // FILL_BLANK
   return (
     <div className="mt-2 space-y-1 text-sm">
-      <p className="text-green-700">Accepted: {(item.correctAnswer || '').split('|').join(', ')}</p>
+      <p className="text-green-700 dark:text-green-400">Accepted: {(item.correctAnswer || '').split('|').join(', ')}</p>
       {item.selectedAnswer && (
-        <p className={item.correct ? 'text-green-700' : 'text-red-700'}>Your answer: {item.selectedAnswer}</p>
+        <p className={item.correct ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}>Your answer: {item.selectedAnswer}</p>
       )}
     </div>
   );

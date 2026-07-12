@@ -54,8 +54,8 @@ export default function BatchDetailPage() {
         <Link to="/admin/batches" className="text-sm text-brand hover:underline">
           ← Back to batches
         </Link>
-        <h2 className="mt-1 text-xl font-semibold text-slate-800">{batch.name}</h2>
-        {batch.description && <p className="text-sm text-slate-500">{batch.description}</p>}
+        <h2 className="mt-1 text-xl font-semibold text-slate-800 dark:text-slate-100">{batch.name}</h2>
+        {batch.description && <p className="text-sm text-slate-500 dark:text-slate-400">{batch.description}</p>}
       </div>
 
       {error && <Alert>{error}</Alert>}
@@ -86,7 +86,7 @@ export default function BatchDetailPage() {
 function SectionHeader({ title, children }) {
   return (
     <div className="mb-3 flex items-center justify-between">
-      <h3 className="text-lg font-semibold text-slate-800">{title}</h3>
+      <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{title}</h3>
       {children}
     </div>
   );
@@ -154,7 +154,7 @@ function StudentsSection({ batchId, enrolled, allStudents, onChange, setError })
         </SectionHeader>
 
         {creating && (
-          <form onSubmit={createAndEnroll} className="mb-4 grid grid-cols-1 gap-3 rounded-lg bg-slate-50 p-3 sm:grid-cols-4">
+          <form onSubmit={createAndEnroll} className="mb-4 grid grid-cols-1 gap-3 rounded-lg bg-slate-50 dark:bg-slate-900/40 p-3 sm:grid-cols-4">
             <Input
               placeholder="Name"
               value={newStudent.name}
@@ -196,14 +196,14 @@ function StudentsSection({ batchId, enrolled, allStudents, onChange, setError })
         </form>
 
         {enrolled.length === 0 ? (
-          <p className="text-sm text-slate-500">No students enrolled yet.</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">No students enrolled yet.</p>
         ) : (
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-slate-100 dark:divide-slate-700">
             {enrolled.map((s) => (
               <li key={s.id} className="flex items-center justify-between py-2">
                 <div>
-                  <p className="text-sm font-medium text-slate-700">{s.name}</p>
-                  <p className="text-xs text-slate-400">{s.email}</p>
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{s.name}</p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500">{s.email}</p>
                 </div>
                 <Button variant="ghost" onClick={() => unenroll(s.id)} disabled={busy}>
                   Remove
@@ -265,14 +265,14 @@ function NotesSection({ batchId, notes, onChange, setError }) {
     <Card>
       <CardBody>
         <SectionHeader title="Notes" />
-        <form onSubmit={upload} className="mb-4 grid grid-cols-1 gap-3 rounded-lg bg-slate-50 p-3 sm:grid-cols-4">
+        <form onSubmit={upload} className="mb-4 grid grid-cols-1 gap-3 rounded-lg bg-slate-50 dark:bg-slate-900/40 p-3 sm:grid-cols-4">
           <Input placeholder="Subject" value={subject} onChange={(e) => setSubject(e.target.value)} required />
           <Input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} required />
           <input
             ref={fileRef}
             type="file"
             accept="application/pdf"
-            className="text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-brand file:px-3 file:py-2 file:text-white"
+            className="text-sm text-slate-600 dark:text-slate-300 file:mr-3 file:rounded-lg file:border-0 file:bg-brand file:px-3 file:py-2 file:text-white"
             required
           />
           <Button type="submit" disabled={busy}>
@@ -281,14 +281,14 @@ function NotesSection({ batchId, notes, onChange, setError }) {
         </form>
 
         {notes.length === 0 ? (
-          <p className="text-sm text-slate-500">No notes uploaded yet.</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">No notes uploaded yet.</p>
         ) : (
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-slate-100 dark:divide-slate-700">
             {notes.map((n) => (
               <li key={n.id} className="flex items-center justify-between py-2">
                 <div>
-                  <p className="text-sm font-medium text-slate-700">{n.title}</p>
-                  <p className="text-xs text-slate-400">{n.subject}</p>
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{n.title}</p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500">{n.subject}</p>
                 </div>
                 <div className="flex gap-1">
                   <Button variant="secondary" onClick={() => downloadFile(n.downloadUrl, `${n.title}.pdf`)}>
@@ -350,7 +350,7 @@ function TestsSection({ batchId, tests, onChange, setError, navigate }) {
     <Card>
       <CardBody>
         <SectionHeader title="Tests" />
-        <form onSubmit={create} className="mb-4 space-y-3 rounded-lg bg-slate-50 p-3">
+        <form onSubmit={create} className="mb-4 space-y-3 rounded-lg bg-slate-50 dark:bg-slate-900/40 p-3">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div className="sm:col-span-1">
               <Input placeholder="Test title" value={title} onChange={(e) => setTitle(e.target.value)} required />
@@ -369,7 +369,7 @@ function TestsSection({ batchId, tests, onChange, setError, navigate }) {
             </Select>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <label className="flex items-center gap-2 text-sm text-slate-600">
+            <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
               <input
                 type="checkbox"
                 checked={negativeMarking}
@@ -379,7 +379,7 @@ function TestsSection({ batchId, tests, onChange, setError, navigate }) {
               Negative marking
             </label>
             {negativeMarking && (
-              <label className="flex items-center gap-2 text-sm text-slate-600">
+              <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
                 Deduct per wrong:
                 <Input
                   type="number"
@@ -400,14 +400,14 @@ function TestsSection({ batchId, tests, onChange, setError, navigate }) {
         </form>
 
         {tests.length === 0 ? (
-          <p className="text-sm text-slate-500">No tests created yet.</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">No tests created yet.</p>
         ) : (
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-slate-100 dark:divide-slate-700">
             {tests.map((t) => (
               <li key={t.id} className="flex items-center justify-between py-2">
                 <div>
-                  <p className="text-sm font-medium text-slate-700">{t.title}</p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{t.title}</p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500">
                     {t.durationMinutes} min · {t.questionCount} questions · {t.totalMarks} marks
                   </p>
                 </div>
@@ -481,13 +481,13 @@ function LibrarySection({ batchId, assignedFiles, tests, onChange, setError }) {
 
         {assignedFiles.length > 0 && (
           <div className="mb-4">
-            <p className="mb-1 text-sm font-medium text-slate-600">Assigned files</p>
-            <ul className="divide-y divide-slate-100">
+            <p className="mb-1 text-sm font-medium text-slate-600 dark:text-slate-300">Assigned files</p>
+            <ul className="divide-y divide-slate-100 dark:divide-slate-700">
               {assignedFiles.map((f) => (
                 <li key={f.id} className="flex items-center justify-between py-2">
                   <div>
-                    <p className="text-sm font-medium text-slate-700">{f.title}</p>
-                    <p className="text-xs text-slate-400">{f.subject}</p>
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{f.title}</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500">{f.subject}</p>
                   </div>
                   <div className="flex gap-1">
                     <Button variant="secondary" onClick={() => downloadFile(f.downloadUrl, `${f.title}.pdf`)}>
@@ -507,8 +507,8 @@ function LibrarySection({ batchId, assignedFiles, tests, onChange, setError }) {
           </div>
         )}
 
-        <div className="rounded-lg bg-slate-50 p-3">
-          <p className="mb-2 text-sm font-medium text-slate-600">Assign from a library folder</p>
+        <div className="rounded-lg bg-slate-50 dark:bg-slate-900/40 p-3">
+          <p className="mb-2 text-sm font-medium text-slate-600 dark:text-slate-300">Assign from a library folder</p>
           <Select value={selectedFolderId} onChange={(e) => setSelectedFolderId(e.target.value)}>
             <option value="">Choose a folder…</option>
             {folders.map((f) => (
@@ -521,14 +521,14 @@ function LibrarySection({ batchId, assignedFiles, tests, onChange, setError }) {
           {folderDetail && (
             <div className="mt-3 space-y-3">
               <div>
-                <p className="text-xs font-semibold uppercase text-slate-400">Files</p>
+                <p className="text-xs font-semibold uppercase text-slate-400 dark:text-slate-500">Files</p>
                 {folderDetail.files.length === 0 ? (
-                  <p className="text-sm text-slate-400">No files in this folder.</p>
+                  <p className="text-sm text-slate-400 dark:text-slate-500">No files in this folder.</p>
                 ) : (
                   folderDetail.files.map((f) => (
                     <div key={f.id} className="flex items-center justify-between py-1">
-                      <span className="text-sm text-slate-700">
-                        {f.title} <span className="text-slate-400">· {f.subject}</span>
+                      <span className="text-sm text-slate-700 dark:text-slate-200">
+                        {f.title} <span className="text-slate-400 dark:text-slate-500">· {f.subject}</span>
                       </span>
                       {assignedFileIds.has(f.id) ? (
                         <Badge kind="green">Assigned</Badge>
@@ -545,15 +545,15 @@ function LibrarySection({ batchId, assignedFiles, tests, onChange, setError }) {
                 )}
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase text-slate-400">Tests</p>
+                <p className="text-xs font-semibold uppercase text-slate-400 dark:text-slate-500">Tests</p>
                 {folderDetail.tests.length === 0 ? (
-                  <p className="text-sm text-slate-400">No tests in this folder.</p>
+                  <p className="text-sm text-slate-400 dark:text-slate-500">No tests in this folder.</p>
                 ) : (
                   folderDetail.tests.map((t) => (
                     <div key={t.id} className="flex items-center justify-between py-1">
-                      <span className="text-sm text-slate-700">
+                      <span className="text-sm text-slate-700 dark:text-slate-200">
                         {t.title}{' '}
-                        <span className="text-slate-400">
+                        <span className="text-slate-400 dark:text-slate-500">
                           · {t.testType === 'PRACTICE' ? 'Practice' : 'Exam'} · {t.questionCount} q
                         </span>
                       </span>

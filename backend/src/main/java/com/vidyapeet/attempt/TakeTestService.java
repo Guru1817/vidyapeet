@@ -17,9 +17,11 @@ import com.vidyapeet.exam.BatchTest;
 import com.vidyapeet.exam.MockTest;
 import com.vidyapeet.exam.Question;
 import com.vidyapeet.exam.TestType;
+import com.vidyapeet.exam.dto.SectionResponse;
 import com.vidyapeet.exam.repository.BatchTestRepository;
 import com.vidyapeet.exam.repository.MockTestRepository;
-import com.vidyapeet.exam.repository.QuestionRepository;
+import com.vidyapeet.exam.repository.TestQuestionReferenceRepository;
+import com.vidyapeet.exam.repository.TestSectionRepository;
 import com.vidyapeet.security.SecurityUtils;
 import com.vidyapeet.security.UserPrincipal;
 import com.vidyapeet.user.User;
@@ -47,7 +49,8 @@ import java.util.stream.Collectors;
 public class TakeTestService {
 
     private final MockTestRepository testRepository;
-    private final QuestionRepository questionRepository;
+    private final TestQuestionReferenceRepository referenceRepository;
+    private final TestSectionRepository sectionRepository;
     private final TestAttemptRepository attemptRepository;
     private final AttemptAnswerRepository answerRepository;
     private final BatchStudentRepository batchStudentRepository;
@@ -57,7 +60,8 @@ public class TakeTestService {
 
     public TakeTestService(
             MockTestRepository testRepository,
-            QuestionRepository questionRepository,
+            TestQuestionReferenceRepository referenceRepository,
+            TestSectionRepository sectionRepository,
             TestAttemptRepository attemptRepository,
             AttemptAnswerRepository answerRepository,
             BatchStudentRepository batchStudentRepository,
@@ -65,7 +69,8 @@ public class TakeTestService {
             UserRepository userRepository,
             Grader grader) {
         this.testRepository = testRepository;
-        this.questionRepository = questionRepository;
+        this.referenceRepository = referenceRepository;
+        this.sectionRepository = sectionRepository;
         this.attemptRepository = attemptRepository;
         this.answerRepository = answerRepository;
         this.batchStudentRepository = batchStudentRepository;
@@ -114,7 +119,7 @@ public class TakeTestService {
 
             summaries.add(new StudentTestSummary(
                     test.getId(), test.getTitle(), test.getDurationMinutes(),
-                    test.getTotalMarks(), questionRepository.countByTestId(test.getId()),
+                    test.getTotalMarks(), referenceRepository.countByTestId(test.getId()),
                     test.getTestType(), test.isNegativeMarking(), status, bestScore));
         }
         return summaries;
@@ -145,13 +150,24 @@ public class TakeTestService {
             attempt = attemptRepository.save(attempt);
         }
 
-        List<TakeQuestion> questions = questionRepository.findByTestId(testId).stream()
-                .map(TakeQuestion::from)
+        // Section this bank question is grouped under within the test (null = ungrouped),
+        // so the take-test view can group questions by section (Req 7.5).
+        Map<Long, Long> sectionByQuestionId = new HashMap<>();
+        referenceRepository.findByTestIdOrderBySectionPositionAscPositionAsc(testId)
+                .forEach(reference -> sectionByQuestionId.put(
+                        reference.getBankQuestionId(), reference.getSectionId()));
+        List<TakeQuestion> questions = referenceRepository.findResolvedQuestions(testId).stream()
+                .map(q -> TakeQuestion.from(q, sectionByQuestionId.get(q.getId())))
                 .toList();
+        List<SectionResponse> sections = sectionRepository.findByTestIdOrderByPositionAsc(testId).stream()
+                .map(SectionResponse::from)
+                .toList();
+        // Single overall timer (Req 7.4): deadline is startedAt + durationMinutes, never a
+        // per-section limit.
         Instant deadline = attempt.getStartedAt().plus(Duration.ofMinutes(test.getDurationMinutes()));
         return new StartedTestResponse(
                 attempt.getId(), test.getId(), test.getTitle(), test.getDurationMinutes(),
-                attempt.getStartedAt(), deadline, questions);
+                attempt.getStartedAt(), deadline, sections, questions);
     }
 
     @Transactional
@@ -167,7 +183,7 @@ public class TakeTestService {
         }
 
         MockTest test = requireTest(attempt.getTestId());
-        List<Question> questions = questionRepository.findByTestId(attempt.getTestId());
+        List<Question> questions = referenceRepository.findResolvedQuestions(attempt.getTestId());
 
         Map<Long, String> selections = toSelections(request, questions);
         GradeOutcome outcome = grader.grade(
@@ -262,7 +278,7 @@ public class TakeTestService {
             throw Exceptions.badRequest("This attempt has not been submitted yet.");
         }
         MockTest test = requireTest(attempt.getTestId());
-        List<Question> questions = questionRepository.findByTestId(attempt.getTestId());
+        List<Question> questions = referenceRepository.findResolvedQuestions(attempt.getTestId());
         Map<Long, AttemptAnswer> answers = answerRepository.findByAttemptId(attempt.getId()).stream()
                 .collect(Collectors.toMap(AttemptAnswer::getQuestionId, Function.identity()));
 
@@ -275,7 +291,7 @@ public class TakeTestService {
                     a == null ? null : a.getSelectedAnswer(),
                     a != null && a.isCorrect(),
                     a == null ? 0.0 : a.getMarksAwarded(),
-                    q.getMarks());
+                    q.getMarks(), q.getImageKey());
         }).toList();
 
         return new ResultResponse(attempt.getId(), test.getId(), test.getTitle(),
@@ -293,7 +309,7 @@ public class TakeTestService {
                     g == null ? null : g.selectedAnswer(),
                     g != null && g.correct(),
                     g == null ? 0.0 : g.marksAwarded(),
-                    q.getMarks());
+                    q.getMarks(), q.getImageKey());
         }).toList();
         return new ResultResponse(attempt.getId(), test.getId(), test.getTitle(),
                 attempt.getScore(), test.getTotalMarks(), attempt.getSubmittedAt(), breakdown);

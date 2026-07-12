@@ -30,8 +30,8 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-xl font-semibold text-slate-800">{branding.name}</h2>
-        <p className="text-sm text-slate-500">Overview of your institute.</p>
+        <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">{branding.name}</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400">Overview of your institute.</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -40,7 +40,7 @@ export default function AdminDashboardPage() {
             <Card className="transition hover:shadow-md">
               <CardBody>
                 <p className="text-3xl font-bold text-brand">{stats[tile.key]}</p>
-                <p className="mt-1 text-sm text-slate-500">{tile.label}</p>
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{tile.label}</p>
               </CardBody>
             </Card>
           </Link>
@@ -49,7 +49,7 @@ export default function AdminDashboardPage() {
 
       <Card>
         <CardBody>
-          <h3 className="mb-2 text-lg font-semibold text-slate-800">Quick links</h3>
+          <h3 className="mb-2 text-lg font-semibold text-slate-800 dark:text-slate-100">Quick links</h3>
           <div className="flex flex-wrap gap-3 text-sm">
             <Link to="/admin/students" className="text-brand hover:underline">
               Manage students

@@ -8,8 +8,10 @@ import com.vidyapeet.common.Role;
 import com.vidyapeet.exam.AnswerOption;
 import com.vidyapeet.exam.MockTest;
 import com.vidyapeet.exam.Question;
+import com.vidyapeet.exam.TestQuestionReference;
 import com.vidyapeet.exam.repository.MockTestRepository;
 import com.vidyapeet.exam.repository.QuestionRepository;
+import com.vidyapeet.exam.repository.TestQuestionReferenceRepository;
 import com.vidyapeet.institute.Institute;
 import com.vidyapeet.institute.repository.InstituteRepository;
 import com.vidyapeet.note.Note;
@@ -47,6 +49,7 @@ public class DataSeeder implements CommandLineRunner {
     private final NoteRepository noteRepository;
     private final MockTestRepository mockTestRepository;
     private final QuestionRepository questionRepository;
+    private final TestQuestionReferenceRepository referenceRepository;
     private final PasswordEncoder passwordEncoder;
 
     public DataSeeder(
@@ -57,6 +60,7 @@ public class DataSeeder implements CommandLineRunner {
             NoteRepository noteRepository,
             MockTestRepository mockTestRepository,
             QuestionRepository questionRepository,
+            TestQuestionReferenceRepository referenceRepository,
             PasswordEncoder passwordEncoder) {
         this.instituteRepository = instituteRepository;
         this.userRepository = userRepository;
@@ -65,6 +69,7 @@ public class DataSeeder implements CommandLineRunner {
         this.noteRepository = noteRepository;
         this.mockTestRepository = mockTestRepository;
         this.questionRepository = questionRepository;
+        this.referenceRepository = referenceRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -191,7 +196,6 @@ public class DataSeeder implements CommandLineRunner {
     private int saveQuestion(Long testId, String text, String a, String b, String c, String d,
                              AnswerOption correct, int marks) {
         Question question = new Question();
-        question.setTestId(testId);
         question.setType(com.vidyapeet.exam.QuestionType.MCQ);
         question.setText(text);
         question.setOptionA(a);
@@ -200,7 +204,14 @@ public class DataSeeder implements CommandLineRunner {
         question.setOptionD(d);
         question.setCorrectAnswer(correct.name());
         question.setMarks(marks);
-        questionRepository.save(question);
+        question = questionRepository.save(question);
+
+        // Attach the bank question to the test by reference (reuse-by-reference model).
+        TestQuestionReference reference = new TestQuestionReference();
+        reference.setTestId(testId);
+        reference.setBankQuestionId(question.getId());
+        reference.setPosition((int) referenceRepository.countByTestId(testId));
+        referenceRepository.save(reference);
         return marks;
     }
 }
