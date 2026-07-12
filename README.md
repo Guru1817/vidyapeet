@@ -59,13 +59,17 @@ Open the demo portal (institute code **`demo`**) and sign in:
 
 ## Screenshots
 
-<!-- Add screenshots/GIFs here for the best showcase, e.g.:
-![Landing page](docs/screenshots/landing.png)
-![Take test](docs/screenshots/take-test.png)
-![Admin dashboard](docs/screenshots/admin-dashboard.png)
--->
+**Public landing page** — SEO-optimized marketing page served at the apex domain.
 
-_Coming soon — drop screenshots/GIFs of the landing page, the take-test flow, and the admin dashboard in `docs/screenshots/`._
+![Landing page](docs/screenshots/Landing.png)
+
+**Features overview**
+
+![Features](docs/screenshots/features.png)
+
+**Institute admin dashboard** — per-tenant view of students, batches, tests, and notes.
+
+![Admin dashboard](docs/screenshots/admin-dashboard.png)
 
 ---
 
