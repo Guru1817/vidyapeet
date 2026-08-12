@@ -4,6 +4,7 @@ import { useAuth } from '../auth/AuthContext';
 import { homeFor } from '../auth/ProtectedRoute';
 import { errorMessage } from '../api/client';
 import BrandLogo from '../components/BrandLogo';
+import PortfolioFooter from '../components/PortfolioFooter';
 import ThemeToggle from '../theme/ThemeToggle';
 import { applyLandingSeo } from '../seo/landingSeo';
 import { Alert, Button, Card, CardBody, Field, Input } from '../components/ui';
@@ -281,20 +282,7 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="border-t border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
-        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-4 px-4 py-8 sm:flex-row sm:items-center">
-          <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400">
-            <BrandLogo variant="icon" className="h-7 w-7 text-brand" />
-            <span className="text-sm">© {new Date().getFullYear()} Vidyapeeth</span>
-          </div>
-          <p className="text-sm text-slate-600 dark:text-slate-300">
-            Institute sign-up requests and queries:{' '}
-            <a href={`mailto:${CONTACT_EMAIL}`} className="font-medium text-brand hover:underline">
-              {CONTACT_EMAIL}
-            </a>
-          </p>
-        </div>
-      </footer>
+      <PortfolioFooter />
     </div>
   );
 }
