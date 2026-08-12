@@ -1,13 +1,14 @@
 // Unit + snapshot tests for the public marketing LandingPage.
 //
-// Validates: Requirements 2.3, 2.4, 2.5, 2.6, 2.7, 3.6, 3.9
+// Validates: Requirements 2.3, 2.4, 2.5, 2.6, 3.6, 3.9, 6.1, 6.2
 //   2.3 - presents marketing content (who/what/features)
 //   2.4 - student sign-up entry point submits to the student registration flow
 //   2.5 - log-in entry point supports SUPER_ADMIN / INSTITUTE_ADMIN / STUDENT
 //   2.6 - NO institute self-sign-up mechanism
-//   2.7 - footer shows the contact email vidyapeeth.in@gmail.com
 //   3.6 - semantic HTML landmark elements (header, nav, main, section, footer)
 //   3.9 - long-tail phrase "mock test platform for coaching institutes"
+//   6.1 - PortfolioFooter appears on the Landing_Page
+//   6.2 - PortfolioFooter replaces the existing footer section
 //
 // SEO meta tags / JSON-LD are covered by their own task; these tests focus on
 // landing content, structure, and auth wiring.
@@ -214,14 +215,31 @@ describe('LandingPage', () => {
     });
   });
 
-  describe('footer contact email (Req 2.7)', () => {
-    it('shows the institute contact email in the footer', () => {
+  describe('portfolio footer integration (Req 6.1, 6.2)', () => {
+    it('renders the PortfolioFooter component with copyright text', () => {
       render(<LandingPage />);
       const footer = screen.getByRole('contentinfo');
-      const emailLink = within(footer).getByRole('link', {
-        name: /vidyapeeth\.in@gmail\.com/i,
-      });
-      expect(emailLink).toHaveAttribute('href', 'mailto:vidyapeeth.in@gmail.com');
+      expect(within(footer).getByText(/© 2026/)).toBeInTheDocument();
+      expect(within(footer).getByText(/Gurupada Nayak/)).toBeInTheDocument();
+      expect(within(footer).getByText(/Made with ♥ in India/)).toBeInTheDocument();
+    });
+
+    it('renders the PortfolioFooter credit link', () => {
+      render(<LandingPage />);
+      const footer = screen.getByRole('contentinfo');
+      expect(within(footer).getByText(/Crafted by/)).toBeInTheDocument();
+      expect(within(footer).getByText(/GurupadaNayak/)).toBeInTheDocument();
+    });
+
+    it('does not render the old Vidyapeeth copyright or contact email in the footer', () => {
+      render(<LandingPage />);
+      const footer = screen.getByRole('contentinfo');
+      // Old footer had "© <year> Vidyapeeth" or similar Vidyapeeth branding
+      expect(within(footer).queryByText(/Vidyapeeth/i)).not.toBeInTheDocument();
+      // Old footer had contact email link
+      expect(
+        within(footer).queryByRole('link', { name: /vidyapeeth\.in@gmail\.com/i }),
+      ).not.toBeInTheDocument();
     });
   });
 
