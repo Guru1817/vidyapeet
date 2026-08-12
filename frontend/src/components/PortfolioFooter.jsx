@@ -2,24 +2,23 @@ function PortfolioFooter() {
   return (
     <footer className="border-t border-slate-700 bg-slate-900">
       <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-4 px-4 py-8 sm:flex-row sm:items-center">
-        {/* Copyright Section */}
-        <p className="text-slate-300">
-          © 2026{' '}
-          <a
-            href="https://gurupadanayak.in/?ref=vidyapeeth"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Visit Gurupada Nayak's portfolio website"
-            className="text-slate-300 underline hover:text-white"
-          >
-            Gurupada Nayak
-          </a>
-          . Made with ♥ in India
-        </p>
+        {/* Copyright & Contact Section */}
+        <div className="text-slate-300">
+          <p>© 2026 Gurupada Nayak. Made with ♥ in India</p>
+          <p className="mt-1">
+            For institute signup & queries:{' '}
+            <a
+              href="mailto:vidyapeeth.in@gmail.com"
+              className="underline hover:text-white"
+            >
+              vidyapeeth.in@gmail.com
+            </a>
+          </p>
+        </div>
 
         {/* Credit Section */}
         <a
-          href="https://gurupadanayak.in"
+          href="https://gurupadanayak.in/?ref=vidyapeeth"
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Visit GurupadaNayak's portfolio"
